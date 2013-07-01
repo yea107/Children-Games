@@ -1,0 +1,85 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta charset="utf-8">
+	<link rel="stylesheet" type="text/css" href="./lib/bootstrap/css/bootstrap.css">
+	<script type="text/javascript" src="./lib/jquery-1.10.1.js"></script>
+	<script type="text/javascript" src="./lib/knockout-2.2.1.js"></script>
+	<style type="text/css">
+		div.block
+		{
+			width:50px;
+			height: 50px;
+			margin: 0px;
+			display: inline-block; 	
+		}
+		div#block_field
+		{
+			width: 270px;
+		}
+		
+	</style>
+	<script type="text/javascript">
+		function Block (num) {
+			var self = this;
+			self.isOut = ko.observable(false);
+			self.num = num;
+		}
+		function GameViewModel() {
+			var self = this, blocks_root = 5, blocks_count = blocks_root*blocks_root;
+			self.limit = ko.observable(50);
+			self.blocks = ko.observableArray();
+			
+			//behavior
+			self.reset = function() {
+				self.num_array = $.map(new Array(blocks_count), function(){return getRandomNum(self.limit())});
+				self.blocks(function() {
+					var random_array = self.num_array
+					return $.map(random_array, function(e,i){return new Block(random_array[i])});
+				}());
+				self.num_array.sort(function(a,b){return (a - b) ;})
+			}
+
+			//btn events
+			self.click_block = function(block) {
+				var num = block.num,
+					arr = self.num_array;
+				if (num == arr[0]) {
+					block.isOut(true);
+					arr.shift();
+				}
+				if(arr.length == 0){
+					alert('恭喜破關，請點選「更新」重玩');
+				}
+			}
+			self.reset();
+		}
+		//this function maybe not generate really random num
+		function getRandomNum(seed) {
+			return Math.floor(Math.random()*seed);
+		}
+		function resetGame() {
+			ko.applyBindings(new GameViewModel());
+		}
+		$(function () {
+			GameVM = new GameViewModel();
+			ko.applyBindings(GameVM);
+		})
+	</script>
+</head>
+<body>
+	<div class="header">
+		<span>請輸入數字範圍</span>
+		<input type="text" data-bind="value: limit">
+		<input type="button" class="btn" data-bind="click: reset" value="更新">
+	</div>
+	<div class="content">
+		<div id="block_field" data-bind="foreach: blocks">
+			<div class="block">
+				<input type="button" class="btn" data-bind="value:$data.num, click: $root.click_block, disable: $data.isOut">
+			</div>
+		</div>
+	</div>
+	<div class="footer"></div>
+</body>
+</html>
