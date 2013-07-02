@@ -1,0 +1,110 @@
+<html>
+<head>
+	<meta charset="utf-8" />
+	<script language="javascript" src="./TTSTOOL/TTSscript.js"></script>
+	<script language="javascript" src="./lib/knockout-2.2.1.js"></script>
+	<script type="text/javascript" src="./lib/jquery-1.10.1.js"></script>
+	<script>
+		var setting = {
+			number_length: 8,
+			show_speed: 600,
+			question_count: 4
+		}
+		function getSingleRandomNum() {
+			return Math.floor(Math.random()*9);
+		}
+		function getLimitRandomNum(length) {
+			return $.map(new Array(length), function(){return getSingleRandomNum();}).join('');
+		}
+		function GameViewModel() {
+			var self = this;
+			self.right_count = ko.observable(0);
+			self.question_count = ko.observable(0);
+			self.num = ko.observable(getLimitRandomNum(setting.number_length));
+			self.answer_num = ko.observable();
+			self.next = function () {
+				self.give_answer();
+				self.answer_num('');
+				self.num(getLimitRandomNum(setting.number_length));
+				self.show_num();
+			}
+			self.reset = function() {
+				self.question_count(0);
+				self.right_count(0);
+				self.answer_num('');
+				self.num(getLimitRandomNum(setting.number_length));
+			}
+			self.start = function() {
+				self.reset();
+				self.show_num();
+			}
+			self.give_answer = function () {
+				if ( self.question_count() == setting.question_count ) {
+					self.statistic();
+					self.reset();
+				}else {
+					self.check_answer();
+				}
+			}
+			self.show_num = function() {
+				$("span#random_num").show();
+				setTimeout(function() { $("span#random_num").hide();},setting.show_speed);
+				self.question_count(self.question_count() + 1);
+			}
+			self.check_answer = function() {
+				if (self.num() == self.answer_num()) {
+					self.right_count(self.right_count() + 1);
+				}
+			}
+			self.statistic = function () {
+				alert('您一共答了對了' + self.right_count() + '題。' )
+			}
+
+			//initialize
+			self.reset();
+		}
+		$(function() {
+			GameVM = new GameViewModel();
+			ko.applyBindings(GameVM);
+		})
+	</script>
+	<style>
+		body
+		{
+			margin: 0px auto;
+		}
+		span#random_num
+		{
+			display: none;
+		}
+		div#content
+		{
+			height: 100px;
+			width: 500px;
+		}
+		div#content span
+		{
+			font-size: 80px;
+		}
+		div#content input
+		{
+			font-size: 40px;
+		}
+
+	</style>
+</head>
+<body>
+	<div class="header">
+	</div>
+	<div id="content">
+		<input type="button" data-bind="click: start, visible: $root.question_count() == 0" value="按此開始！">
+        <span id="random_num" data-bind="text: num"></span>
+	</div>
+	<div id="media"></div>
+	<div class="footer">
+		<span data-bind="text:'第' + $root.question_count() + '題：'"></span>
+		<input type="text" data-bind="value: answer_num" placeholder="請輸入一閃即失的數字">
+		<input type="button" data-bind="click: next, visible: $root.question_count() > 0" value="下一題">
+	</div>
+</body>
+</html>
