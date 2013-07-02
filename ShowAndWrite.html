@@ -24,9 +24,13 @@
 			self.answer_num = ko.observable();
 			self.next = function () {
 				self.give_answer();
-				self.answer_num('');
-				self.num(getLimitRandomNum(setting.number_length));
-				self.show_num();
+				if ( self.question_count() < setting.question_count) {
+					self.answer_num('');
+					self.num(getLimitRandomNum(setting.number_length));
+					self.show_num();
+				} else{
+					self.reset();
+				}
 			}
 			self.reset = function() {
 				self.question_count(0);
@@ -40,8 +44,7 @@
 			}
 			self.give_answer = function () {
 				if ( self.question_count() == setting.question_count ) {
-					self.statistic();
-					self.reset();
+					self.statistic();	
 				}else {
 					self.check_answer();
 				}
