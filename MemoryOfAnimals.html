@@ -1,0 +1,246 @@
+<html>
+<head>
+	<meta charset="utf-8" />
+	<script language="javascript" src="./lib/knockout-2.2.1.js"></script>
+	<script type="text/javascript" src="./lib/jquery-1.10.1.js"></script>
+	<style>
+		body
+		{
+			margin: 0px auto;
+		}
+		span#random_num
+		{
+			display: none;
+		}
+		span#random_num
+		{
+			font-size: 80px;
+		}
+		input#start
+		{
+			font-size: 40px;
+		}
+		div#numberKeyPad
+		{
+			height: 400px;
+			width: 300px;
+		}
+		div#div_answer, div#div_select, div#div_random_animal
+		{
+			font-size: 20px;
+			height: 200px;
+		}
+		div.select
+		{
+			cursor: pointer;
+		}
+		div.bug
+		{
+			display: inline-block;
+			background-image: url('lib/animal_pictures/bug.jpg');
+			width: 160px;
+			height: 160px;
+		}
+		div.fox
+		{	
+			display: inline-block;
+			background-image: url('lib/animal_pictures/fox.jpg');
+			width: 160px;
+			height: 160px;
+		}
+		div.bear
+		{
+			display: inline-block;
+			background-image: url('lib/animal_pictures/bear.jpg');
+			width: 160px;
+			height: 160px;
+		}
+		div.fish
+		{
+			display: inline-block;
+			background-image: url('lib/animal_pictures/fish.jpg');
+			width: 160px;
+			height: 160px;
+		}
+		div.bee
+		{	
+			display: inline-block;
+			background-image: url('lib/animal_pictures/bee.jpg');
+			width: 160px;
+			height: 160px;
+		}
+		div.snake
+		{
+			display: inline-block;
+			background-image: url('lib/animal_pictures/snake.jpg');
+			width: 160px;
+			height: 160px;
+		}
+		div.crab
+		{	
+			display: inline-block;
+			background-image: url('lib/animal_pictures/crab.jpg');
+			width: 160px;
+			height: 160px;
+		}
+		div.eagle
+		{
+			display: inline-block;
+			background-image: url('lib/animal_pictures/eagle.jpg');
+			width: 160px;
+			height: 160px;
+		}
+	</style>
+	<script>
+		var animal_names = ['bug','fox','bear','eagle','crab','snake','fish','bee'];
+		var animal_count = animal_names.length;
+
+		var getSingleRandomNum = function(seed) {
+			return Math.floor(Math.random()*seed);
+		}
+		
+		function Animal(id) {
+			self = this;
+			self.id = id;
+			self.name = animal_names[self.id];
+			self.get_css = ko.computed(function() {
+				return self.name;
+			})
+		}
+		function GameViewModel() {
+			var self = this;
+			self.question_length = ko.observable(4);
+			self.show_second = ko.observable(1);
+			self.show_speed = ko.computed(function(){
+				return self.show_second()*1000;
+			})
+			self.question_Animals = ko.observableArray([
+				new Animal(1), new Animal(0)
+			])
+			self.answer_Animals = ko.observableArray([]);
+			self.select_Animals = ko.observableArray($.map(new Array(animal_count), function(e,i){return new Animal(i)}));
+			self.isShow = ko.observable(false);
+			self.question_num = ko.observable(4);
+			self.right_count = ko.observable(0);
+			self.question_count = ko.observable(0);
+
+			self.next = function () {
+				if ( self.question_count() < self.question_num()) {
+					self.check_answer();
+					self.reset_answer();
+					self.reset_question();
+					self.show_animals();
+				} else{
+					self.check_answer();
+					self.statistic();
+					self.reset();
+				}
+			}
+
+			//click
+			self.select = function(selected_animal){
+				self.answer_Animals.push(new Animal(selected_animal.id))
+			}
+			self.start = function() {
+				self.reset();
+				self.show_animals();
+			}
+
+			//reset
+			self.reset_question = function() {
+				var arr = $.map(new Array(parseInt(self.question_length())), function() {return new Animal(getSingleRandomNum(animal_count))});
+				self.question_Animals(arr);
+			}
+			self.reset_answer = function() {
+				self.answer_Animals([]);
+			}
+			self.reset = function() {
+				self.question_count(0);
+				self.right_count(0);
+				self.reset_question();
+				self.reset_answer();
+			}
+
+			//behavior
+			self.show_animals = function() {
+				self.isShow(true);
+				setTimeout(function() {self.isShow(false)}, self.show_speed());
+				self.question_count(self.question_count() + 1);
+			}
+			self.check_answer = function() {
+				var check = true,
+					ans = self.answer_Animals(),
+					ques = self.question_Animals(),
+					count = 0;
+				if (ans.length != ques.length){
+					check = false;
+				}
+				while(count < ans.length && check == true){
+					if (ans[count].id != ques[count].id) {
+						check = false;
+					}
+					count++;
+				}
+				if (check) {
+					self.right_count(self.right_count() + 1);
+				}
+			}
+			self.statistic = function () {
+				alert('答對/題數： ' + self.right_count() + '/' + self.question_num() );
+			}
+
+			//initialize
+			self.reset();
+		}
+		$(function() {
+			GameVM = new GameViewModel();
+			ko.applyBindings(GameVM);
+		})
+	</script>
+	
+</head>
+<body>
+	<div class="header">
+	</div>
+	<div id="content">
+		<div id="div_start_setting" data-bind="visible: $root.question_count() == 0">
+			<h1>遊戲設定</h1>
+			<p>
+				<label for="question_num">全部題數：</label>
+				<input id="question_num" type="text" data-bind="value: question_num">
+			</p>
+			<p>
+				<label for="question_length">動物長度：</label>
+				<input id="question_length" type="text" data-bind="value: question_length">
+			</p>
+			<p>
+				<label for="show_second">顯示秒數：</label>
+				<input id="show_second" type="text" data-bind="value: show_second">
+			</p>
+			<input id="start" type="button" data-bind="click: start" value="按此開始！">
+		</div>
+        <div id="div_random_animal" data-bind="visible: $root.question_count() > 0">
+			<span data-bind="text:'第' + $root.question_count() + '題：'"></span>
+			<div id="animals" data-bind="foreach: question_Animals, visible: isShow()">
+				<div data-bind="css: $data.get_css"></div>
+			</div>
+        </div>
+		<div id="div_answer" data-bind="visible: $root.question_count() > 0">
+			<span>作答區</span>
+			<input type="button" data-bind="click: next" value="確定送出">
+			<input type="button" data-bind="click: reset_answer" value="清除">
+			<div data-bind="foreach:answer_Animals">
+				<div data-bind="css: $data.get_css"></div>
+			</div>
+		</div>
+		<div id="div_select" data-bind="visible: $root.question_count() > 0">
+			<span>選擇區</span>
+			<div data-bind="foreach:select_Animals">
+				<div class="select" data-bind="click: $root.select, css: $data.get_css"></div>
+			</div>
+		</div>
+	</div>
+	<div class="footer">
+	</div>
+</body>
+</html>
