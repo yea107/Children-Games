@@ -25,7 +25,7 @@
 			self.question_count = ko.observable(0);
 			self.num = ko.observable(getRandomNumByLength(self.number_length()));
 			self.answer_num = ko.observable();
-
+			self.isShow = ko.observable(false);
 			//behavior
 			self.next = function () {
 				if ( self.question_count() < self.question_num()) {
@@ -50,8 +50,8 @@
 				self.show_num();
 			}
 			self.show_num = function() {
-				$("span#random_num").show();
-				setTimeout(function() { $("span#random_num").hide();},self.show_speed());
+				self.isShow(true);
+				setTimeout(function() { self.isShow(false)},self.show_speed());
 				self.question_count(self.question_count() + 1);
 			}
 			self.check_answer = function() {
@@ -84,10 +84,6 @@
 		body
 		{
 			margin: 0px auto;
-		}
-		span#random_num
-		{
-			display: none;
 		}
 		div#div_random_num
 		{
@@ -134,7 +130,7 @@
         <div id="div_random_num" data-bind="visible: $root.question_count() > 0">
 			<span data-bind="text:'第' + $root.question_count() + '題：'"></span>
 			<br>
-        	<span id="random_num" data-bind="text: num"></span>
+        	<span id="random_num" data-bind="text: num, visible: isShow() "></span>
         </div>
 		<div id="div_anser" data-bind="visible: $root.question_count() > 0">
 			<input id="answer_num" type="text" data-bind="value: answer_num" placeholder="請輸入一閃即逝的數字">
