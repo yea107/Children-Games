@@ -26,20 +26,41 @@
 			self.num = num;
 		}
 		function GameViewModel() {
-			var self = this, blocks_root = 5, blocks_count = blocks_root*blocks_root;
-			self.limit = ko.observable(50);
-			self.blocks = ko.observableArray();
+			var self = this, blocks_root = 5, 
+				blocks_count = blocks_root*blocks_root;
 			
+			self.up_bound = ko.observable(50);
+			self.blocks = ko.observableArray();
+			self.timer_second = ko.observable(0);
+			self.timer_text = ko.computed(function() {
+				var second = self.timer_second()%60, 
+					minute = Math.floor(self.timer_second()/60);
+				return timer_add0(minute) + ' : ' + timer_add0(second);
+			}) 
 			//behavior
 			self.reset = function() {
-				self.num_array = $.map(new Array(blocks_count), function(){return getRandomNum(self.limit())});
+				self.num_array = getUniqueRandomArr( blocks_count, self.up_bound());
 				self.blocks(function() {
 					var random_array = self.num_array
 					return $.map(random_array, function(e,i){return new Block(random_array[i])});
 				}());
 				self.num_array.sort(function(a,b){return (a - b) ;})
+				self.timer_reset();
+				self.timer_start();
 			}
-
+			self.timer_start = function() {
+				self.timeInterval = setInterval(self.timer_refresh,1000);
+			}
+			self.timer_stop = function() {
+				clearInterval(self.timeInterval);
+			}
+			self.timer_refresh = function() {
+				self.timer_second(self.timer_second()+1);
+			}
+			self.timer_reset = function() {
+				self.timer_stop();
+				self.timer_second(0);
+			}
 			//btn events
 			self.click_block = function(block) {
 				var num = block.num,
@@ -49,17 +70,37 @@
 					arr.shift();
 				}
 				if(arr.length == 0){
-					alert('恭喜破關，請點選「更新」重玩');
+					self.timer_stop();
+					alert('恭喜破關，花費時間' + self.timer_text() + '，請點選「重新開始」重玩');
 				}
 			}
-			self.reset();
+			//self.reset();
 		}
 		//this function maybe not generate really random num
-		function getRandomNum(seed) {
-			return Math.floor(Math.random()*seed);
+		//but actually we don't need the zero in this game.
+		var getRandomNum = function(seed) {
+			return Math.ceil(Math.random()*seed);
 		}
-		function resetGame() {
-			ko.applyBindings(new GameViewModel());
+		var getUniqueRandomArr = function(length, up_bound) {
+			if (up_bound < length) {
+				up_bound = length;
+			};
+			var arr = [], num;
+			for (var i = 0; i < length; i++) {
+				num = getRandomNum(up_bound);
+				while($.inArray(num, arr) >= 0 || num == 0 ){
+					num = getRandomNum(up_bound);
+				}
+				arr.push(num);
+			}
+			return arr;
+		}
+		var timer_add0 = function(num) {
+			var num_str = num.toString();
+			if(num_str.length < 2){
+				num_str = '0' + num_str;
+			}
+			return num_str;
 		}
 		$(function () {
 			GameVM = new GameViewModel();
@@ -70,14 +111,18 @@
 <body>
 	<div class="header">
 		<span>請輸入數字範圍</span>
-		<input type="text" data-bind="value: limit">
-		<input type="button" class="btn" data-bind="click: reset" value="更新">
+		<input type="text" data-bind="value: up_bound">
+		<input type="button" class="btn" data-bind="click: reset, value: timer_second() > 0? '重新開始' : '按此開始' ">
 	</div>
 	<div class="content">
 		<div id="block_field" data-bind="foreach: blocks">
 			<div class="block">
 				<input type="button" class="btn" data-bind="value:$data.num, click: $root.click_block, disable: $data.isOut">
 			</div>
+		</div>
+		<div id="time_field">
+			<h1>計時</h1>
+			<h1 id="timer" data-bind="text: timer_text"></h1>
 		</div>
 	</div>
 	<div class="footer"></div>
