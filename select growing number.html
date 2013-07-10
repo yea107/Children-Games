@@ -80,7 +80,7 @@
 		//this function maybe not generate really random num
 		//but actually we don't need the zero in this game.
 		var getRandomNum = function(seed) {
-			return Math.ceil(Math.random()*seed);
+			return Math.floor(Math.random()*seed+1);
 		}
 		var getUniqueRandomArr = function(length, up_bound) {
 			if (up_bound < length) {

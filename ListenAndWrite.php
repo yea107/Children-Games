@@ -9,7 +9,7 @@
 			number_length: 8,
 		}
 		function getSingleRandomNum() {
-			return Math.floor(Math.random()*9);
+			return Math.floor(Math.random()*10);
 		}
 		function getLimitRandomNum(length) {
 			return $.map(new Array(length), function(){return getSingleRandomNum();}).join('');
