@@ -1,32 +1,35 @@
 <html>
 <head>
 	<meta charset="utf-8" />
-	<script language="javascript" src="./TTSTOOL/TTSscript.js"></script>
 	<script language="javascript" src="./lib/knockout-2.2.1.js"></script>
 	<script type="text/javascript" src="./lib/jquery-1.10.1.js"></script>
+	<script type="text/javascript" src="./lib/jquery.keypad.package-1.5.1/jquery.keypad.js"></script>
+	<link rel="stylesheet" href="./lib/jquery.keypad.package-1.5.1/jquery.keypad.css">
 	<script>
-		var setting = {
-			number_length: 8,
-			show_speed: 600,
-			question_count: 4
-		}
-		function getSingleRandomNum() {
+		var numberKeyPad;
+		var getSingleRandomNum = function() {
 			return Math.floor(Math.random()*9);
 		}
-		function getLimitRandomNum(length) {
+		var getRandomNumByLength = function(length) {
 			return $.map(new Array(length), function(){return getSingleRandomNum();}).join('');
 		}
 		function GameViewModel() {
 			var self = this;
+			self.number_length = ko.observable(4);
+			self.show_second = ko.observable(1);
+			self.show_speed = ko.computed(function(){
+				return self.show_second()*1000;
+			})
+			self.question_num = ko.observable(4);
 			self.right_count = ko.observable(0);
 			self.question_count = ko.observable(0);
-			self.num = ko.observable(getLimitRandomNum(setting.number_length));
+			self.num = ko.observable(getRandomNumByLength(self.number_length()));
 			self.answer_num = ko.observable();
 			self.next = function () {
 				self.give_answer();
-				if ( self.question_count() < setting.question_count) {
+				if ( self.question_count() < self.question_num()) {
 					self.answer_num('');
-					self.num(getLimitRandomNum(setting.number_length));
+					self.num(getRandomNumByLength(self.number_length()));
 					self.show_num();
 				} else{
 					self.reset();
@@ -36,14 +39,14 @@
 				self.question_count(0);
 				self.right_count(0);
 				self.answer_num('');
-				self.num(getLimitRandomNum(setting.number_length));
+				self.num(getRandomNumByLength(self.number_length()));
 			}
 			self.start = function() {
 				self.reset();
 				self.show_num();
 			}
 			self.give_answer = function () {
-				if ( self.question_count() == setting.question_count ) {
+				if ( self.question_count() == self.question_num() ) {
 					self.statistic();	
 				}else {
 					self.check_answer();
@@ -51,7 +54,7 @@
 			}
 			self.show_num = function() {
 				$("span#random_num").show();
-				setTimeout(function() { $("span#random_num").hide();},setting.show_speed);
+				setTimeout(function() { $("span#random_num").hide();},self.show_speed());
 				self.question_count(self.question_count() + 1);
 			}
 			self.check_answer = function() {
@@ -60,7 +63,7 @@
 				}
 			}
 			self.statistic = function () {
-				alert('您一共答了對了' + self.right_count() + '題。' )
+				alert('答對/題數： ' + self.right_count() + '/' + self.question_num() );
 			}
 
 			//initialize
@@ -69,6 +72,15 @@
 		$(function() {
 			GameVM = new GameViewModel();
 			ko.applyBindings(GameVM);
+			numberKeyPad = $("#numberKeyPad").keypad({target: $("#answer_num"), 
+				closeText: '下一題', 
+				onClose: function(value) {
+					GameVM.answer_num(value);
+					GameVM.next();
+				},
+				clearText: '清除',
+				backText: '修改'
+			});
 		})
 	</script>
 	<style>
@@ -80,34 +92,59 @@
 		{
 			display: none;
 		}
-		div#content
+		div#div_random_num
 		{
 			height: 100px;
 			width: 500px;
 		}
-		div#content span
+		span#random_num
 		{
 			font-size: 80px;
 		}
-		div#content input
+		input#start
 		{
 			font-size: 40px;
 		}
-
+		div#numberKeyPad
+		{
+			height: 400px;
+			width: 300px;
+		}
+		div#div_anser input#answer_num
+		{
+			font-size: 20px;
+			width: 300px;
+		}
 	</style>
 </head>
 <body>
 	<div class="header">
 	</div>
 	<div id="content">
-		<input type="button" data-bind="click: start, visible: $root.question_count() == 0" value="按此開始！">
-        <span id="random_num" data-bind="text: num"></span>
+		<div id="div_start_setting" data-bind="visible: $root.question_count() == 0">
+			<h1>遊戲設定</h1>
+			<label for="question_num">全部題數：</label>
+			<input id="question_num" type="text" data-bind="value: question_num">
+			<br>	
+			<label for="number_length">數字長度：</label>
+			<input id="number_length" type="text" data-bind="value: number_length">
+			<br>
+			<label for="show_second">顯示秒數：</label>
+			<input id="show_second" type="text" data-bind="value: show_second">
+			<br><br>
+			<input id="start" type="button" data-bind="click: start" value="按此開始！">
+		</div>
+        <div id="div_random_num" data-bind="visible: $root.question_count() > 0">
+			<span data-bind="text:'第' + $root.question_count() + '題：'"></span>
+			<br>
+        	<span id="random_num" data-bind="text: num"></span>
+        </div>
+		<div id="div_anser" data-bind="visible: $root.question_count() > 0">
+			<input id="answer_num" type="text" data-bind="value: answer_num" placeholder="請輸入一閃即逝的數字">
+			<div id="numberKeyPad"></div>
+		</div>
 	</div>
-	<div id="media"></div>
 	<div class="footer">
-		<span data-bind="text:'第' + $root.question_count() + '題：'"></span>
-		<input type="text" data-bind="value: answer_num" placeholder="請輸入一閃即逝的數字">
-		<input type="button" data-bind="click: next, visible: $root.question_count() > 0" value="下一題">
 	</div>
 </body>
 </html>
