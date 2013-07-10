@@ -25,13 +25,17 @@
 			self.question_count = ko.observable(0);
 			self.num = ko.observable(getRandomNumByLength(self.number_length()));
 			self.answer_num = ko.observable();
+
+			//behavior
 			self.next = function () {
-				self.give_answer();
 				if ( self.question_count() < self.question_num()) {
+					self.check_answer();
 					self.answer_num('');
 					self.num(getRandomNumByLength(self.number_length()));
 					self.show_num();
 				} else{
+					self.check_answer();
+					self.statistic();
 					self.reset();
 				}
 			}
@@ -44,13 +48,6 @@
 			self.start = function() {
 				self.reset();
 				self.show_num();
-			}
-			self.give_answer = function () {
-				if ( self.question_count() == self.question_num() ) {
-					self.statistic();	
-				}else {
-					self.check_answer();
-				}
 			}
 			self.show_num = function() {
 				$("span#random_num").show();
