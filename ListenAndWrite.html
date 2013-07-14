@@ -1,0 +1,197 @@
+<html>
+<head>
+	<meta charset="utf-8" />
+	<title>Show And Write</title>
+	<script language="javascript" src="./lib/knockout-2.2.1.js"></script>
+	<script type="text/javascript" src="./lib/jquery-1.10.1.js"></script>
+	<script type="text/javascript" src="./lib/jquery.keypad.package-1.5.1/jquery.keypad.js"></script>
+	<link rel="stylesheet" href="./lib/jquery.keypad.package-1.5.1/jquery.keypad.css">
+	<script>
+		var numberKeyPad, GameVM, audio;
+		var num_speak_map = [
+			[9.25,9.75],// 0
+			[0.25,0.75],// 1
+			[1.25,1.75],// 2
+			[2.25,2.75],// 3
+			[3.25,3.75],// 4
+			[4.25,4.75],// 5
+			[5.25,5.75],// 6
+			[6.25,6.75],// 7
+			[7.25,7.75],// 8
+			[8.25,8.75],// 9
+		];
+		var getSingleRandomNum = function() {
+			return Math.floor(Math.random()*10);
+		};
+		var getRandomNumArray = function(length) {
+			return $.map(new Array(parseInt(length)), function(){return getSingleRandomNum();});
+		};
+		function GameViewModel() {
+			var self = this;
+			self.number_length = ko.observable(4);
+			self.question_num = ko.observable(4);
+			self.right_count = ko.observable(0);
+			self.question_count = ko.observable(0);
+			self.random_arr = ko.observableArray([]);
+			self.num = ko.computed(function(){
+				return self.random_arr().join('');
+			});
+			self.num2speak = ko.computed(function(){
+				var speak_arr = [];
+				$.each(self.random_arr(), function(idx, val){
+					speak_arr.push(num_speak_map[val]);
+				});
+				return speak_arr;
+				// //Don't know why following code can not work!!!
+				// return $.map(self.random_arr(), function(num){
+				// 	return num_speak_map[num];
+				// });
+			});
+			self.answer_num = ko.observable();
+			self.isShow = ko.observable(false);
+			//behavior
+			self.next = function () {
+				if ( self.question_count() < self.question_num()) {
+					self.check_answer();
+					self.answer_num('');
+					self.random_arr(getRandomNumArray(self.number_length()));
+					self.speak();
+				} else{
+					self.check_answer();
+					self.statistic();
+					self.reset();
+				}
+			};
+			self.reset = function() {
+				self.question_count(0);
+				self.right_count(0);
+				self.answer_num('');
+				self.random_arr(getRandomNumArray(self.number_length()));
+			};
+			self.start = function() {
+				self.reset();
+				self.speak();
+			};
+			self.speak = function() {
+				audio.play_part_que(self.num2speak(),0);
+				self.question_count(self.question_count() + 1);
+			};
+			self.check_answer = function() {
+				if (self.num() == self.answer_num()) {
+					self.right_count(self.right_count() + 1);
+				}
+			};
+			self.statistic = function () {
+				alert('答對/題數： ' + self.right_count() + '/' + self.question_num() );
+			};
+
+			//initialize
+			self.reset();
+		}
+		$(function() {
+			GameVM = new GameViewModel();
+			ko.applyBindings(GameVM);
+			numberKeyPad = $("#numberKeyPad").keypad({target: $("#answer_num"), 
+				closeText: '下一題', 
+				onClose: function(value) {
+					//不知道為什麼knockout偵測不到keypad造成的改變，所以需要手動填入換題
+					GameVM.answer_num(value);
+					GameVM.next();
+				},
+				clearText: '清除',
+				backText: '修改'
+			});
+			audio = $("audio")[0];
+			audio.play_part = function(start, end) {
+				var duration = end - start,
+					self = this;
+				self.currentTime = start;
+				self.play();
+				setTimeout(function(){ self.pause();}, duration*1000);
+			};
+			audio.play_part_que = function(arr, count) {
+				var self = this,
+					duration = (arr[count][1]-arr[count][0])*1000,//unit: ms
+					start = arr[count][0],
+					end = arr[count][1];
+				self.play_part(start, end);
+				if (count < arr.length-1) { // Shouldn't callback last time
+					setTimeout(function(){
+						self.play_part_que(arr, count+1);
+					}, duration) ;
+				};
+
+			};
+		});
+	</script>
+	<style>
+		body
+		{
+			margin: 0px auto;
+		}
+		div#div_random_num
+		{
+			height: 100px;
+			width: 500px;
+		}
+		span#random_num
+		{
+			font-size: 80px;
+		}
+		input#start
+		{
+			font-size: 40px;
+		}
+		div#numberKeyPad
+		{
+			height: 400px;
+			width: 300px;
+		}
+		div#div_anser input#answer_num
+		{
+			font-size: 20px;
+			width: 300px;
+		}
+		audio
+		{
+			display: none;
+		}
+	</style>
+</head>
+<body>
+	<div class="header">
+	</div>
+	<div id="content">
+		<div id="div_start_setting" data-bind="visible: $root.question_count() == 0">
+			<h1>遊戲設定</h1>
+			<p>
+				<label for="question_num">全部題數：</label>
+				<input id="question_num" type="text" data-bind="value: question_num">
+			</p>
+			<p>
+				<label for="number_length">數字長度：</label>
+				<input id="number_length" type="text" data-bind="value: number_length">
+			</p>
+			<p>
+				<input id="start" type="button" data-bind="click: start" value="按此開始！">
+			</p>
+		</div>
+        <div id="div_random_num" data-bind="visible: $root.question_count() > 0">
+			<span data-bind="text:'第' + $root.question_count() + '題：'"></span>
+			<br>
+			<audio controls height="100" width="100">
+			  <source src="lib/audio/zero_to_nine.mp3" type="audio/mpeg">
+			  <source src="lib/audio/zero_to_nine.ogg" type="audio/ogg">
+			  <embed height="50" width="100" src="lib/audio/zero_to_nine.mp3">
+			</audio>
+        	<span id="random_num" data-bind="text: num, visible: false "></span>
+        </div>
+		<div id="div_anser" data-bind="visible: $root.question_count() > 0">
+			<input id="answer_num" type="text" data-bind="value: answer_num" placeholder="請輸入剛剛聽到的數字">
+			<div id="numberKeyPad"></div>
+		</div>
+	</div>
+	<div class="footer">
+	</div>
+</body>
+</html>
