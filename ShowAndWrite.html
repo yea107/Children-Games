@@ -9,7 +9,6 @@
 	<link rel="stylesheet" href="./lib/bootstrap/css/bootstrap.css">
 	<link rel="stylesheet" href="./lib/jquery.keypad.package-1.5.1/jquery.keypad.css">
 	<style>
-
 		div#div_game_main
 		{
 			width: 500px;
@@ -146,7 +145,7 @@
 			});
 			$("#btn_setting").click(function(){
 				$("#div_game_setting").slideToggle();
-			})
+			});
 		})
 	</script>
 </head>
@@ -155,7 +154,7 @@
 	</div>
 	<div class="contain">
 		<div id="div_game_main" data-bind="visible: $root.question_count() == 0">
-			<div class="main_header">
+			<div class="main-header">
 				<h1>Show And Write</h1>
 			</div>
 			<div class="hide" id="div_game_setting">
@@ -177,13 +176,13 @@
 					</p>
 				</div>
 			</div>
-			<div class="main_btn">
+			<div class="main-btn">
 				<input id="btn_start" type="button" class="btn btn-large btn-success" data-bind="click: start" value="開始遊戲！">
 				<input id="btn_setting" type="button" class="btn btn-large btn-info" value="遊戲設定">
 			</div>
 		</div>
         <div id="div_game_play" data-bind="visible: $root.question_count() > 0">
-        	<div id="div" class="header">
+        	<div id="div" class="play-header">
         		<h3 data-bind="text:'第' + $root.question_count() + '題：'"></h3>
         	</div>
         	<div id="div_random_num">
