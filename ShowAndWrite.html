@@ -92,7 +92,7 @@
 		}
 		div#div_random_num
 		{
-			min-height: 100px;
+			min-height: 110px;
 			width: 500px;
 			margin: 15px auto;
 			border-style: dashed;
@@ -111,15 +111,30 @@
 		div#numberKeyPad
 		{
 			height: 400px;
-			width: 300px;
+			width: 500px;
 		}
 		input#answer_num
 		{
-			font-size: 20px;
-			width: 300px;
+			font-size: 40px;
+			width: 500px;
 			height: 50px;
 		}
-
+		.keypad-space
+		{
+			width: 2em;
+		}
+		.keypad-key
+		{
+			width: 2em;
+			height: 2em;
+		}
+		.keypad-special
+		{
+			height: 2em;
+		}
+		.keypad-popup, .keypad-inline, .keypad-key, .keypad-special {
+			font-size: 44px;
+		}
 	</style>
 </head>
 <body>
@@ -131,8 +146,8 @@
 				<h1>Show And Write</h1>
 			</div>
 			<div class="main_btn">
-				<input id="btn_start" type="button" class="btn btn-success" data-bind="click: start" value="開始遊戲！">
-				<input id="btn_setting" type="button" class="btn btn-info" data-toggle="modal" data-target="#div_game_setting" value="遊戲設定">
+				<input id="btn_start" type="button" class="btn btn-large btn-success" data-bind="click: start" value="開始遊戲！">
+				<input id="btn_setting" type="button" class="btn btn-large btn-info" data-toggle="modal" data-target="#div_game_setting" value="遊戲設定">
 			</div>
 		</div>
 		<div class="modal hide fade" id="div_game_setting">
