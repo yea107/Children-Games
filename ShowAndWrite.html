@@ -5,6 +5,8 @@
 	<script language="javascript" src="./lib/knockout-2.2.1.js"></script>
 	<script type="text/javascript" src="./lib/jquery-1.10.1.js"></script>
 	<script type="text/javascript" src="./lib/jquery.keypad.package-1.5.1/jquery.keypad.js"></script>
+	<script type="text/javascript" src="./lib/bootstrap/js/bootstrap.min.js"></script>
+	<link rel="stylesheet" href="./lib/bootstrap/css/bootstrap.css">
 	<link rel="stylesheet" href="./lib/jquery.keypad.package-1.5.1/jquery.keypad.css">
 	<script>
 		var numberKeyPad;
@@ -82,61 +84,95 @@
 		})
 	</script>
 	<style>
-		body
+		div#div_game_main
 		{
-			margin: 0px auto;
+			width: 500;
+			margin: 0 auto;
+			text-align: center;
 		}
 		div#div_random_num
 		{
 			height: 100px;
 			width: 500px;
+			margin: 0 auto;
+		}
+		div#div_game_play
+		{
+			width: 500px;
+			margin: 0 auto;
 		}
 		span#random_num
 		{
 			font-size: 80px;
-		}
-		input#start
-		{
-			font-size: 40px;
+			line-height: normal;
 		}
 		div#numberKeyPad
 		{
 			height: 400px;
 			width: 300px;
 		}
-		div#div_anser input#answer_num
+		input#answer_num
 		{
 			font-size: 20px;
 			width: 300px;
+			height: 50px;
 		}
+
 	</style>
 </head>
 <body>
 	<div class="header">
 	</div>
-	<div id="content">
-		<div id="div_start_setting" data-bind="visible: $root.question_count() == 0">
-			<h1>遊戲設定</h1>
-			<label for="question_num">全部題數：</label>
-			<input id="question_num" type="text" data-bind="value: question_num">
-			<br>	
-			<label for="number_length">數字長度：</label>
-			<input id="number_length" type="text" data-bind="value: number_length">
-			<br>
-			<label for="show_second">顯示秒數：</label>
-			<input id="show_second" type="text" data-bind="value: show_second">
-			<br><br>
-			<input id="start" type="button" data-bind="click: start" value="按此開始！">
+	<div class="contain">
+		<div id="div_game_main" data-bind="visible: $root.question_count() == 0">
+			<div class="main_header">
+				<h1>Show And Write</h1>
+			</div>
+			<div class="main_btn">
+				<input id="btn_start" type="button" class="btn btn-success" data-bind="click: start" value="開始遊戲！">
+				<input id="btn_setting" type="button" class="btn btn-info" data-toggle="modal" data-target="#div_game_setting" value="遊戲設定">
+			</div>
 		</div>
-        <div id="div_random_num" data-bind="visible: $root.question_count() > 0">
-			<span data-bind="text:'第' + $root.question_count() + '題：'"></span>
-			<br>
-        	<span id="random_num" data-bind="text: num, visible: isShow() "></span>
+		<div class="modal hide fade" id="div_game_setting">
+			<div class="modal-header">
+				<h1>遊戲設定</h1>
+			</div>
+			<div class="modal-body form-horizontal">
+				<div class="control-group">
+					<label for="question_num" class="control-label">全部題數：</label>
+					<div class="controls">
+						<input id="question_num" type="text" data-bind="value: question_num">
+					</div>
+				</div>
+				<div class="control-group">
+					<label for="number_length" class="control-label">數字長度：</label>
+					<div class="controls">
+						<input id="number_length" type="text" data-bind="value: number_length">
+					</div>
+				</div>
+				<div class="control-group">
+					<label for="show_second" class="control-label">顯示秒數：</label>
+					<div class="controls">
+						<input id="show_second" type="text" data-bind="value: show_second">
+					</div>						
+				</div>
+			</div>
+			<div class="modal-footer">
+				<input type="button" class="btn btn-primary" data-dismiss="modal" aria-hidden="true" value="確定">
+			</div>
+		</div>
+        <div id="div_game_play" data-bind="visible: $root.question_count() > 0">
+        	<div id="div" class="header">
+        		<h3 data-bind="text:'第' + $root.question_count() + '題：'"></h3>
+        	</div>
+        	<div id="div_random_num">
+        		<span id="random_num" class="text-center" data-bind="text: num, visible: isShow() "></span>
+        	</div>
+			<div id="div_anser">
+				<input id="answer_num" type="text" data-bind="value: answer_num" placeholder="請輸入一閃即逝的數字">
+				<div id="numberKeyPad"></div>
+			</div>
         </div>
-		<div id="div_anser" data-bind="visible: $root.question_count() > 0">
-			<input id="answer_num" type="text" data-bind="value: answer_num" placeholder="請輸入一閃即逝的數字">
-			<div id="numberKeyPad"></div>
-		</div>
 	</div>
 	<div class="footer">
 	</div>
