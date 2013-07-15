@@ -1,11 +1,78 @@
 <html>
 <head>
 	<meta charset="utf-8" />
-	<title>Show And Write</title>
+	<title>Listen And Write</title>
+	<link rel="stylesheet" href="./lib/bootstrap/css/bootstrap.css">
 	<script language="javascript" src="./lib/knockout-2.2.1.js"></script>
 	<script type="text/javascript" src="./lib/jquery-1.10.1.js"></script>
 	<script type="text/javascript" src="./lib/jquery.keypad.package-1.5.1/jquery.keypad.js"></script>
 	<link rel="stylesheet" href="./lib/jquery.keypad.package-1.5.1/jquery.keypad.css">
+	<style>
+		div#div_game_main
+		{
+			width: 500px;
+			margin: 0 auto;
+			text-align: center;
+		}
+		div.setting-body label
+		{
+			display: inline;
+		}
+		div.setting-body input
+		{
+			width: 60px;
+			height: 30px;
+		}
+		div#div_random_num
+		{
+			height: 100px;
+			width: 500px;
+		}
+		div#div_game_play
+		{
+			width: 500px;
+			margin: 0 auto;
+		}
+		span#random_num
+		{
+			font-size: 80px;
+		}
+		input#start
+		{
+			font-size: 40px;
+		}
+		div#numberKeyPad
+		{
+			height: 400px;
+			width: 500px;
+		}
+		input#answer_num
+		{
+			font-size: 40px;
+			width: 500px;
+			height: 50px;
+		}
+		audio
+		{
+			display: none;
+		}
+		.keypad-space
+		{
+			width: 2em;
+		}
+		.keypad-key
+		{
+			width: 2em;
+			height: 2em;
+		}
+		.keypad-special
+		{
+			height: 2em;
+		}
+		.keypad-popup, .keypad-inline, .keypad-key, .keypad-special {
+			font-size: 44px;
+		}
+	</style>
 	<script>
 		var numberKeyPad, GameVM, audio;
 		var num_speak_map = [
@@ -120,76 +187,62 @@
 						self.play_part_que(arr, count+1);
 					}, duration) ;
 				};
-
 			};
+			$("#btn_setting").click(function(){
+				$("#div_game_setting").slideToggle();
+			});
 		});
 	</script>
-	<style>
-		body
-		{
-			margin: 0px auto;
-		}
-		div#div_random_num
-		{
-			height: 100px;
-			width: 500px;
-		}
-		span#random_num
-		{
-			font-size: 80px;
-		}
-		input#start
-		{
-			font-size: 40px;
-		}
-		div#numberKeyPad
-		{
-			height: 400px;
-			width: 300px;
-		}
-		div#div_anser input#answer_num
-		{
-			font-size: 20px;
-			width: 300px;
-		}
-		audio
-		{
-			display: none;
-		}
-	</style>
 </head>
 <body>
 	<div class="header">
 	</div>
-	<div id="content">
-		<div id="div_start_setting" data-bind="visible: $root.question_count() == 0">
-			<h1>遊戲設定</h1>
-			<p>
-				<label for="question_num">全部題數：</label>
-				<input id="question_num" type="text" data-bind="value: question_num">
-			</p>
-			<p>
-				<label for="number_length">數字長度：</label>
-				<input id="number_length" type="text" data-bind="value: number_length">
-			</p>
-			<p>
-				<input id="start" type="button" data-bind="click: start" value="按此開始！">
-			</p>
+	<div id="contain">
+		<div id="div_game_main" data-bind="visible: $root.question_count() == 0">
+			<div class="main_header">
+				<h1>Listen And Write</h1>
+			</div>
+			<div id="div_game_setting" class="hide">
+				<div class="setting-header">
+					<h3>遊戲設定</h3>
+				</div>
+				<div class="setting-body">
+					<p>
+						<label for="question_num">全部題數：</label>
+						<input id="question_num" type="text" data-bind="value: question_num">
+					</p>
+					<p>
+						<label for="number_length">數字長度：</label>
+						<input id="number_length" type="text" data-bind="value: number_length">
+					</p>
+				</div>
+			</div>
+			<div class="main-btn">
+				<input id="btn_start" type="button" class="btn btn-large btn-success" data-bind="click: start" value="開始遊戲！">
+				<input id="btn_setting" type="button" class="btn btn-large btn-info" value="遊戲設定">
+			</div>
 		</div>
-        <div id="div_random_num" data-bind="visible: $root.question_count() > 0">
-			<span data-bind="text:'第' + $root.question_count() + '題：'"></span>
-			<br>
-			<audio controls height="100" width="100">
-			  <source src="lib/audio/zero_to_nine.mp3" type="audio/mpeg">
-			  <source src="lib/audio/zero_to_nine.ogg" type="audio/ogg">
-			  <embed height="50" width="100" src="lib/audio/zero_to_nine.mp3">
-			</audio>
-        	<span id="random_num" data-bind="text: num, visible: false "></span>
+        <div id="div_game_play" data-bind="visible: $root.question_count() > 0">
+        	<div id="div_random_num">
+				<div class="play-header">
+					<h3 data-bind="text:'第' + $root.question_count() + '題：'"></h3>
+				</div>
+				<div id="div_audio">
+					<audio controls height="100" width="100">
+					  <source src="lib/audio/zero_to_nine.mp3" type="audio/mpeg">
+					  <source src="lib/audio/zero_to_nine.ogg" type="audio/ogg">
+					  <embed height="50" width="100" src="lib/audio/zero_to_nine.mp3">
+					</audio>
+				</div>
+        		<div id="div_random_num">
+        			<span id="random_num" data-bind="text: num, visible: false "></span>
+        		</div>
+        	</div>
+			<div id="div_anser">
+				<input id="answer_num" type="text" data-bind="value: answer_num" placeholder="請輸入剛剛聽到的數字">
+				<div id="numberKeyPad"></div>
+			</div>
         </div>
-		<div id="div_anser" data-bind="visible: $root.question_count() > 0">
-			<input id="answer_num" type="text" data-bind="value: answer_num" placeholder="請輸入剛剛聽到的數字">
-			<div id="numberKeyPad"></div>
-		</div>
 	</div>
 	<div class="footer">
 	</div>
