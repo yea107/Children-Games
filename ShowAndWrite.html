@@ -8,6 +8,69 @@
 	<script type="text/javascript" src="./lib/bootstrap/js/bootstrap.min.js"></script>
 	<link rel="stylesheet" href="./lib/bootstrap/css/bootstrap.css">
 	<link rel="stylesheet" href="./lib/jquery.keypad.package-1.5.1/jquery.keypad.css">
+	<style>
+
+		div#div_game_main
+		{
+			width: 500px;
+			margin: 0 auto;
+			text-align: center;
+		}
+		div.setting-body label
+		{
+			display: inline;
+		}
+		div.setting-body input
+		{
+			width: 60px;
+			height: 30px;
+		}
+		div#div_random_num
+		{
+			min-height: 110px;
+			width: 500px;
+			margin: 15px auto;
+			border-style: dashed;
+			word-break: break-all;
+		}
+		div#div_game_play
+		{
+			width: 500px;
+			margin: 0 auto;
+		}
+		p#random_num
+		{
+			font-size: 80px;
+			line-height: normal;
+		}
+		div#numberKeyPad
+		{
+			height: 400px;
+			width: 500px;
+		}
+		input#answer_num
+		{
+			font-size: 40px;
+			width: 500px;
+			height: 50px;
+		}
+		.keypad-space
+		{
+			width: 2em;
+		}
+		.keypad-key
+		{
+			width: 2em;
+			height: 2em;
+		}
+		.keypad-special
+		{
+			height: 2em;
+		}
+		.keypad-popup, .keypad-inline, .keypad-key, .keypad-special {
+			font-size: 44px;
+		}
+	</style>
 	<script>
 		var numberKeyPad;
 		var getSingleRandomNum = function() {
@@ -81,61 +144,11 @@
 				clearText: '清除',
 				backText: '修改'
 			});
+			$("#btn_setting").click(function(){
+				$("#div_game_setting").slideToggle();
+			})
 		})
 	</script>
-	<style>
-		div#div_game_main
-		{
-			width: 500;
-			margin: 0 auto;
-			text-align: center;
-		}
-		div#div_random_num
-		{
-			min-height: 110px;
-			width: 500px;
-			margin: 15px auto;
-			border-style: dashed;
-			word-break: break-all;
-		}
-		div#div_game_play
-		{
-			width: 500px;
-			margin: 0 auto;
-		}
-		p#random_num
-		{
-			font-size: 80px;
-			line-height: normal;
-		}
-		div#numberKeyPad
-		{
-			height: 400px;
-			width: 500px;
-		}
-		input#answer_num
-		{
-			font-size: 40px;
-			width: 500px;
-			height: 50px;
-		}
-		.keypad-space
-		{
-			width: 2em;
-		}
-		.keypad-key
-		{
-			width: 2em;
-			height: 2em;
-		}
-		.keypad-special
-		{
-			height: 2em;
-		}
-		.keypad-popup, .keypad-inline, .keypad-key, .keypad-special {
-			font-size: 44px;
-		}
-	</style>
 </head>
 <body>
 	<div class="header">
@@ -145,37 +158,28 @@
 			<div class="main_header">
 				<h1>Show And Write</h1>
 			</div>
+			<div class="hide" id="div_game_setting">
+				<div class="setting-header">
+					<h3>遊戲設定</h3>
+				</div>
+				<div class="setting-body">
+					<p>
+						<label for="question_num" class="control-label">全部題數：</label>
+						<input id="question_num" type="text" data-bind="value: question_num">
+					</p>
+					<p>
+						<label for="number_length" class="control-label">數字長度：</label>
+						<input id="number_length" type="text" data-bind="value: number_length">
+					</p>
+					<p>
+						<label for="show_second" class="control-label">顯示秒數：</label>
+						<input id="show_second" type="text" data-bind="value: show_second">
+					</p>
+				</div>
+			</div>
 			<div class="main_btn">
 				<input id="btn_start" type="button" class="btn btn-large btn-success" data-bind="click: start" value="開始遊戲！">
-				<input id="btn_setting" type="button" class="btn btn-large btn-info" data-toggle="modal" data-target="#div_game_setting" value="遊戲設定">
-			</div>
-		</div>
-		<div class="modal hide fade" id="div_game_setting">
-			<div class="modal-header">
-				<h1>遊戲設定</h1>
-			</div>
-			<div class="modal-body form-horizontal">
-				<div class="control-group">
-					<label for="question_num" class="control-label">全部題數：</label>
-					<div class="controls">
-						<input id="question_num" type="text" data-bind="value: question_num">
-					</div>
-				</div>
-				<div class="control-group">
-					<label for="number_length" class="control-label">數字長度：</label>
-					<div class="controls">
-						<input id="number_length" type="text" data-bind="value: number_length">
-					</div>
-				</div>
-				<div class="control-group">
-					<label for="show_second" class="control-label">顯示秒數：</label>
-					<div class="controls">
-						<input id="show_second" type="text" data-bind="value: show_second">
-					</div>						
-				</div>
-			</div>
-			<div class="modal-footer">
-				<input type="button" class="btn btn-primary" data-dismiss="modal" aria-hidden="true" value="確定">
+				<input id="btn_setting" type="button" class="btn btn-large btn-info" value="遊戲設定">
 			</div>
 		</div>
         <div id="div_game_play" data-bind="visible: $root.question_count() > 0">
