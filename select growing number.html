@@ -7,18 +7,63 @@
 	<script type="text/javascript" src="./lib/jquery-1.10.1.js"></script>
 	<script type="text/javascript" src="./lib/knockout-2.2.1.js"></script>
 	<style type="text/css">
+		div#div_game_main
+		{
+			width: 500px;
+			margin: 0 auto;
+			text-align: center;
+		}
+		div.setting-body label
+		{
+			display: inline;
+		}
+		div.setting-body input
+		{
+			width: 60px;
+			height: 30px;
+		}
+		div#div_game_play
+		{
+			width: 500px;
+			margin: 0 auto;
+		}
 		div.block
 		{
 			width:50px;
 			height: 50px;
-			margin: 0px;
+			margin: 5px;
 			display: inline-block; 	
 		}
 		div#block_field
 		{
-			width: 270px;
+			width: 450px;
+			border-style: dashed;
+			min-height: 300px;
 		}
-		
+		span#timer
+		{
+			font-size: 30px;
+			font-weight: bold;
+		}
+		span.num
+		{
+			font-size: 20px;
+			font-weight: bold;
+		}
+		div.toolbar
+		{
+			width: 450px;
+			line-height: normal;
+			margin: 3px;
+		}
+		.right
+		{
+			float: right;
+		}
+		.left
+		{
+			float: left;
+		}
 	</style>
 	<script type="text/javascript">
 		function Block (num) {
@@ -30,6 +75,7 @@
 			var self = this, blocks_root = 5, 
 				blocks_count = blocks_root*blocks_root;
 			
+			self.is_started = ko.observable(false);
 			self.up_bound = ko.observable(50);
 			self.blocks = ko.observableArray();
 			self.timer_second = ko.observable(0);
@@ -37,32 +83,22 @@
 				var second = self.timer_second()%60, 
 					minute = Math.floor(self.timer_second()/60);
 				return timer_add0(minute) + ' : ' + timer_add0(second);
-			}) 
-			//behavior
-			self.reset = function() {
+			});
+
+			//btn click
+			self.start = function() {
 				self.num_array = getUniqueRandomArr( blocks_count, self.up_bound());
 				self.blocks(function() {
-					var random_array = self.num_array
+					var random_array = self.num_array;
 					return $.map(random_array, function(e,i){return new Block(random_array[i])});
 				}());
-				self.num_array.sort(function(a,b){return (a - b) ;})
-				self.timer_reset();
-				self.timer_start();
-			}
-			self.timer_start = function() {
-				self.timeInterval = setInterval(self.timer_refresh,1000);
-			}
-			self.timer_stop = function() {
-				clearInterval(self.timeInterval);
-			}
-			self.timer_refresh = function() {
-				self.timer_second(self.timer_second()+1);
-			}
-			self.timer_reset = function() {
-				self.timer_stop();
-				self.timer_second(0);
-			}
-			//btn events
+				self.num_array.sort(function(a,b){return (a - b) ;});
+				self.timer_start_from_zero();
+				self.is_started(true);
+			};
+			self.reset = function() {
+				self.is_started(false);
+			};
 			self.click_block = function(block) {
 				var num = block.num,
 					arr = self.num_array;
@@ -74,14 +110,32 @@
 					self.timer_stop();
 					alert('恭喜破關，花費時間' + self.timer_text() + '，請點選「重新開始」重玩');
 				}
-			}
-			//self.reset();
-		}
+			};
+
+			//timer 
+			self.timer_start = function() {
+				self.timeInterval = setInterval(self.timer_refresh,1000);
+			};
+			self.timer_stop = function() {
+				clearInterval(self.timeInterval);
+			};
+			self.timer_refresh = function() {
+				self.timer_second(self.timer_second()+1);
+			};
+			self.timer_reset = function() {
+				self.timer_stop();
+				self.timer_second(0);
+			};
+			self.timer_start_from_zero = function() {
+				self.timer_reset();
+				self.timer_start();
+			};
+		};
 		//this function maybe not generate really random num
 		//but actually we don't need the zero in this game.
 		var getRandomNum = function(seed) {
 			return Math.floor(Math.random()*seed+1);
-		}
+		};
 		var getUniqueRandomArr = function(length, up_bound) {
 			if (up_bound < length) {
 				up_bound = length;
@@ -95,35 +149,61 @@
 				arr.push(num);
 			}
 			return arr;
-		}
+		};
 		var timer_add0 = function(num) {
 			var num_str = num.toString();
 			if(num_str.length < 2){
 				num_str = '0' + num_str;
 			}
 			return num_str;
-		}
+		};
 		$(function () {
 			GameVM = new GameViewModel();
 			ko.applyBindings(GameVM);
-		})
+			$("#btn_setting").click(function(){
+				$("#div_game_setting").slideToggle();
+			});
+		});
 	</script>
 </head>
 <body>
 	<div class="header">
-		<span>請輸入數字範圍</span>
-		<input type="text" data-bind="value: up_bound">
-		<input type="button" class="btn" data-bind="click: reset, value: timer_second() > 0? '重新開始' : '按此開始' ">
 	</div>
 	<div class="content">
-		<div id="block_field" data-bind="foreach: blocks">
-			<div class="block">
-				<input type="button" class="btn" data-bind="value:$data.num, click: $root.click_block, disable: $data.isOut">
+		<div id="div_game_main" data-bind="visible: !is_started()">
+			<div class="main-header">
+				<h1>Select Growing Number</h1>
+			</div>
+			<div id="div_game_setting" class="hide">
+				<div class="setting-header">
+				</div>
+				<div class="setting-body">
+					<p>
+						<label for="question_num">數字範圍：</label>
+						<input type="text" data-bind="value: up_bound">
+					</p>
+				</div>
+			</div>
+			<div class="main-btn">
+				<input id="btn_start" type="button" class="btn btn-large btn-success" data-bind="click: start" value="開始遊戲！">
+				<input id="btn_setting" type="button" class="btn btn-large btn-info" value="遊戲設定">
 			</div>
 		</div>
-		<div id="time_field">
-			<h1>計時</h1>
-			<h1 id="timer" data-bind="text: timer_text"></h1>
+		<div id="div_game_play" data-bind="visible: is_started()">
+			<div class="toolbar clearfix">
+				<span id="timer" class="left" data-bind="text: '計時： ' + timer_text()"></span>
+				<input id="btn_start" type="button" class="btn btn-success btn-large right" data-bind="click: reset" value="重玩">
+			</div>
+			<div id="block_field" data-bind="foreach: blocks">
+				<div class="block btn" data-bind="click: $root.click_block, css: $data.isOut()?'disabled':''">
+					<div>
+						<span class="num" data-bind="text:$data.num"></span>
+					</div>
+					<div class="icon">
+						<i data-bind="css:$data.isOut()?'icon-ok':''"></i>
+					</div>
+				</div>
+			</div>
 		</div>
 	</div>
 	<div class="footer"></div>
