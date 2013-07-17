@@ -70,6 +70,17 @@
 		.keypad-popup, .keypad-inline, .keypad-key, .keypad-special {
 			font-size: 44px;
 		}
+		div#div_result
+		{
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 200px;
+		}
+		div#div_result > table.table
+		{
+			font-size: 30px;
+		}
 	</style>
 	<script>
 		var numberKeyPad;
@@ -92,6 +103,7 @@
 			self.num = ko.observable(getRandomNumByLength(self.number_length()));
 			self.answer_num = ko.observable();
 			self.isShow = ko.observable(false);
+			self.result_arr = ko.observableArray([]);
 			//behavior
 			self.next = function () {
 				if ( self.question_count() < self.question_num()) {
@@ -110,6 +122,7 @@
 				self.right_count(0);
 				self.answer_num('');
 				self.num(getRandomNumByLength(self.number_length()));
+				self.result_arr([]);
 			}
 			self.start = function() {
 				self.reset();
@@ -123,6 +136,9 @@
 			self.check_answer = function() {
 				if (self.num() == self.answer_num()) {
 					self.right_count(self.right_count() + 1);
+					self.result_arr.push('O');
+				}else{
+					self.result_arr.push('X');
 				}
 			}
 			self.statistic = function () {
@@ -193,6 +209,22 @@
 				<div id="numberKeyPad"></div>
 			</div>
         </div>
+        <div id="div_result" data-bind="visible: $root.question_count() > 0">
+		<table class="table">
+			<thead>
+				<tr>
+					<th>Idx</th>
+					<th>Result</th>
+				</tr>
+			</thead>
+			<tbody data-bind="foreach:result_arr">
+				<tr>
+					<td data-bind="text: $index() + 1"></td>
+					<td data-bind="text: $data"></td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
 	</div>
 	<div class="footer">
 	</div>
