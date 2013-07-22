@@ -2,12 +2,14 @@
 <head>
 	<meta charset="utf-8" />
 	<title>Show And Write</title>
-	<script language="javascript" src="./lib/knockout-2.2.1.js"></script>
 	<script type="text/javascript" src="./lib/jquery-1.10.1.js"></script>
+	<script language="javascript" src="./lib/knockout-2.2.1.js"></script>
 	<script type="text/javascript" src="./lib/jquery.keypad.package-1.5.1/jquery.keypad.js"></script>
+	<script type="text/javascript" src="./lib/jquery.countdown.package-1.6.2/jquery.countdown.js"></script>
 	<script type="text/javascript" src="./lib/bootstrap/js/bootstrap.min.js"></script>
 	<link rel="stylesheet" href="./lib/bootstrap/css/bootstrap.css">
 	<link rel="stylesheet" href="./lib/jquery.keypad.package-1.5.1/jquery.keypad.css">
+	<link rel="stylesheet" href="./lib/jquery.countdown.package-1.6.2/jquery.countdown.css">
 	<style>
 		div#div_game_main
 		{
@@ -15,11 +17,11 @@
 			margin: 0 auto;
 			text-align: center;
 		}
-		div.setting-body label
+		label.setting
 		{
 			display: inline;
 		}
-		div.setting-body input
+		input.setting
 		{
 			width: 60px;
 			height: 30px;
@@ -70,20 +72,30 @@
 		.keypad-popup, .keypad-inline, .keypad-key, .keypad-special {
 			font-size: 44px;
 		}
-		div#div_result
+		div.score-board
 		{
-			position: fixed;
-			top: 0;
-			left: 0;
-			width: 200px;
+			margin: 15px auto;
+			border-style: dashed;
+			padding: 10px;
 		}
-		div#div_result > table.table
+		div#div_countdown
 		{
-			font-size: 30px;
+			font-size: 70px;
+		}
+		div.modal
+		{
+			height: 200px;
+		}
+		div.hasCountdown
+		{	/*just work around method for more good look*/
+			line-height: normal;
+			background-color: #ffffff;
+			border: 0;
+			margin: 5px;
 		}
 	</style>
 	<script>
-		var numberKeyPad;
+		var numberKeyPad, countdown;
 		var getSingleRandomNum = function() {
 			return Math.floor(Math.random()*10);
 		}
@@ -96,14 +108,27 @@
 			self.show_second = ko.observable(1);
 			self.show_speed = ko.computed(function(){
 				return self.show_second()*1000;
-			})
+			});
+			self.name = ko.observable('');
+			self.age = ko.observable('');
 			self.question_num = ko.observable(4);
-			self.right_count = ko.observable(0);
 			self.question_count = ko.observable(0);
 			self.num = ko.observable(getRandomNumByLength(self.number_length()));
 			self.answer_num = ko.observable();
-			self.isShow = ko.observable(false);
+			self.is_num_show = ko.observable(false);
 			self.result_arr = ko.observableArray([]);
+			self.right_count = ko.computed(function(){
+				var count = 0;
+				for(var i = 0; i < self.result_arr().length; i++){
+					if (self.result_arr()[i] == 'O') {
+						count++;
+					};
+				}
+				return count;
+			});
+			self.false_count = ko.computed(function(){
+				return self.result_arr().length - self.right_count();
+			});
 			//behavior
 			self.next = function () {
 				if ( self.question_count() < self.question_num()) {
@@ -113,44 +138,40 @@
 					self.show_num();
 				} else{
 					self.check_answer();
-					self.statistic();
-					self.reset();
+					alert('遊戲結束了，請點選「重新開始」重來');
 				}
-			}
+			};
 			self.reset = function() {
 				self.question_count(0);
-				self.right_count(0);
 				self.answer_num('');
 				self.num(getRandomNumByLength(self.number_length()));
 				self.result_arr([]);
-			}
+			};
 			self.start = function() {
 				self.reset();
 				self.show_num();
-			}
+			};
 			self.show_num = function() {
-				self.isShow(true);
-				setTimeout(function() { self.isShow(false)},self.show_speed());
+				self.is_num_show(true);
+				setTimeout(function() { self.is_num_show(false)},self.show_speed());
 				self.question_count(self.question_count() + 1);
-			}
+			};
 			self.check_answer = function() {
 				if (self.num() == self.answer_num()) {
-					self.right_count(self.right_count() + 1);
 					self.result_arr.push('O');
 				}else{
 					self.result_arr.push('X');
 				}
-			}
-			self.statistic = function () {
-				alert('答對/題數： ' + self.right_count() + '/' + self.question_num() );
-			}
-
+			};
 			//initialize
 			self.reset();
 		}
 		$(function() {
+			//bind knockoutJS object
 			GameVM = new GameViewModel();
 			ko.applyBindings(GameVM);
+
+			//bind jquery-KeyPad
 			numberKeyPad = $("#numberKeyPad").keypad({target: $("#answer_num"), 
 				closeText: '下一題', 
 				onClose: function(value) {
@@ -160,71 +181,105 @@
 				clearText: '清除',
 				backText: '修改'
 			});
+
+			//bind setting bottun event
 			$("#btn_setting").click(function(){
 				$("#div_game_setting").slideToggle();
 			});
+
+			//bind jquery-countdown
+			$("#div_countdown").countdown({format:'S'});
+			$("#btn_start").click(function(){
+				$(".modal").modal('show');
+				var shortly = new Date();
+				shortly.setSeconds(shortly.getSeconds() + 3);
+				$("#div_countdown").countdown('option', { until: shortly, onExpiry: function(){
+					$(".modal").modal('hide');
+					GameVM.start();
+				}});
+			});
+
+			//initialize modal
+			$(".modal").modal({ backdrop:'static', show: false});
+
 		})
 	</script>
 </head>
 <body>
 	<div class="header">
 	</div>
-	<div class="contain">
-		<div id="div_game_main" data-bind="visible: $root.question_count() == 0">
-			<div class="main-header">
-				<h1>Show And Write</h1>
-			</div>
-			<div class="hide" id="div_game_setting">
-				<div class="setting-header">
+	<div class="modal hide">
+		<div id="div_countdown"></div>
+	</div>
+	<div class="container-fluid">
+		<div class="row-fluid">
+			<div class="span3">
+				<h1>我的計分板</h1>
+				<div id="div_result" class="score-board">
+		        	<div class="person-info">
+		        		<h3 data-bind="text: '姓名：' + name()"></h3>
+		        		<h3 data-bind="text: '年齡：' + age()"></h3>
+		        	</div>
+					<table class="table">
+						<tbody data-bind="foreach:result_arr">
+							<tr>
+								<td data-bind="text: $index() + 1"></td>
+								<td data-bind="text: $data"></td>
+							</tr>
+						</tbody>
+					</table>
+					<h3 data-bind="text: '答對: ' + $root.right_count() + '  答錯: ' + $root.false_count()"></h3>
+					<input id="btn_restart" type="button" class="btn btn-success btn-large right" data-bind="click: reset, visible: result_arr().length == question_num()" value="重新開始">
 				</div>
-				<div class="setting-body">
-					<p>
-						<label for="question_num" class="control-label">全部題數：</label>
-						<input id="question_num" type="text" data-bind="value: question_num">
-					</p>
-					<p>
-						<label for="number_length" class="control-label">數字長度：</label>
-						<input id="number_length" type="text" data-bind="value: number_length">
-					</p>
-					<p>
-						<label for="show_second" class="control-label">顯示秒數：</label>
-						<input id="show_second" type="text" data-bind="value: show_second">
-					</p>
-				</div>
 			</div>
-			<div class="main-btn">
-				<input id="btn_start" type="button" class="btn btn-large btn-success" data-bind="click: start" value="開始遊戲！">
-				<input id="btn_setting" type="button" class="btn btn-large btn-info" value="遊戲設定">
+			<div class="span6">
+				<div id="div_game_main" data-bind="visible: $root.question_count() == 0">
+					<div class="main-header">
+						<h1>Show And Write</h1>
+					</div>
+					<div class="person-info">
+						<label class="setting" for="name">姓名</label>
+						<input id="name" class="setting" type="text" data-bind="value: name">
+						<label class="setting" for="age">年齡</label>
+						<input id="age" class="setting" type="text" data-bind="value: age">
+					</div>
+					<div class="hide" id="div_game_setting">
+						<div class="setting-header">
+						</div>
+						<div class="setting-body">
+							<p>
+								<label class="setting" for="question_num">全部題數：</label>
+								<input class="setting" id="question_num" type="text" data-bind="value: question_num">
+							</p>
+							<p>
+								<label class="setting" for="number_length">數字長度：</label>
+								<input class="setting" id="number_length" type="text" data-bind="value: number_length">
+							</p>
+							<p>
+								<label class="setting" for="show_second">顯示秒數：</label>
+								<input class="setting" id="show_second" type="text" data-bind="value: show_second">
+							</p>
+						</div>
+					</div>
+					<div class="main-btn">
+						<input id="btn_start" type="button" class="btn btn-large btn-success" value="開始遊戲！">
+						<input id="btn_setting" type="button" class="btn btn-large btn-info" value="遊戲設定">
+					</div>
+				</div>
+		        <div id="div_game_play" data-bind="visible: $root.question_count() > 0 && result_arr().length < question_num()">
+		        	<div id="div" class="play-header">
+		        		<h3 data-bind="text:'第' + $root.question_count() + '題：'"></h3>
+		        	</div>
+		        	<div id="div_random_num">
+		        		<p id="random_num" data-bind="text: num, visible: is_num_show() "></p>
+		        	</div>
+					<div id="div_anser">
+						<input id="answer_num" type="text" data-bind="value: answer_num" placeholder="請輸入一閃即逝的數字">
+						<div id="numberKeyPad"></div>
+					</div>
+		        </div>
 			</div>
 		</div>
-        <div id="div_game_play" data-bind="visible: $root.question_count() > 0">
-        	<div id="div" class="play-header">
-        		<h3 data-bind="text:'第' + $root.question_count() + '題：'"></h3>
-        	</div>
-        	<div id="div_random_num">
-        		<p id="random_num" data-bind="text: num, visible: isShow() "></p>
-        	</div>
-			<div id="div_anser">
-				<input id="answer_num" type="text" data-bind="value: answer_num" placeholder="請輸入一閃即逝的數字">
-				<div id="numberKeyPad"></div>
-			</div>
-        </div>
-        <div id="div_result" data-bind="visible: $root.question_count() > 0">
-		<table class="table">
-			<thead>
-				<tr>
-					<th>Idx</th>
-					<th>Result</th>
-				</tr>
-			</thead>
-			<tbody data-bind="foreach:result_arr">
-				<tr>
-					<td data-bind="text: $index() + 1"></td>
-					<td data-bind="text: $data"></td>
-				</tr>
-			</tbody>
-		</table>
-	</div>
 	</div>
 	<div class="footer">
 	</div>
